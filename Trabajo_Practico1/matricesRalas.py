@@ -126,20 +126,25 @@ class MatrizRala:
             raise IndexError("Esa posicion no existe en la matriz")
 
         complete: bool = False
+
         if v == 0:
-            if len(self.filas[Idx[0]]) == 1:
-                self.filas[Idx[0]].pop()
-                self.filas.pop(Idx[0])
+            if self[Idx[0], Idx[1]] == 0:
+                return self
+
             else:
-                nuevaFila: ListaEnlazada = ListaEnlazada()
-                nodoAEliminar = self.filas[Idx[0]].nodoPorCondicion(lambda nodo_temp: nodo_temp[0] == Idx[1])
-                for nodo in self.filas[Idx[0]]:
-                    if nodo != nodoAEliminar:
-                        nuevaFila.push(nodo)
+                if len(self.filas[Idx[0]]) == 1:
+                    self.filas[Idx[0]].pop()
+                    self.filas.pop(Idx[0])
+                else:
+                    nuevaFila: ListaEnlazada = ListaEnlazada()
+                    nodoAEliminar = self.filas[Idx[0]].nodoPorCondicion(lambda nodo_temp: nodo_temp.valor[0] == Idx[1])
+                    for nodo in self.filas[Idx[0]]:
+                        if nodo[0] != nodoAEliminar.valor[0]:
+                            nuevaFila.push(nodo)
 
-                self.filas[Idx[0]] = nuevaFila
+                    self.filas[Idx[0]] = nuevaFila
 
-            return self
+                return self
 
         if Idx[0] in self.filas.keys():
             for nodo in self.filas[Idx[0]]:
@@ -191,11 +196,18 @@ class MatrizRala:
                     if nodo[0] not in columnasCompartidas:
                         #INCOMPLETO
                 """
+
+        """for nro_fila in self.filas.keys(): #TERMINAR
+            if nro_fila in other.filas.keys():
+                for nodo in self.filas[nro_fila]:"""
+
+        res = MatrizRala(self.shape[0], self.shape[1])
+
         for i in range(self.shape[0]):
             for j in range(self.shape[1]):
-                self[i, j] += other[i, j]
+                res[i, j] = self[i, j] + other[i, j]
 
-        return self
+        return res
 
     def __sub__(self, other):
         # Esta funcion implementa la resta de matrices (pueden usar suma y producto) -> A - B
@@ -238,16 +250,49 @@ def GaussJordan(A, b):
     matriz_temp_gj = A
     for pos_pivotes in range(cantPivotes):
         pivote = A[pos_pivotes, pos_pivotes]
+        print("pivote", pivote)
         if pivote != 0:
-            matriz_temp_gj[pos_pivotes, pos_pivotes] /= pivote
-            filas_a_restar = list(matriz_temp_gj.filas.keys())
+            if pivote != 1:
+                nodo = matriz_temp_gj.filas[pos_pivotes].raiz
+                while nodo is not None:
+                    print("pos", nodo.valor)
+                    matriz_temp_gj[pos_pivotes, nodo.valor[0]] /= pivote
+                    nodo = nodo.siguiente
+
+                b[pos_pivotes, 0] /= pivote
+
+            print("primera", repr(matriz_temp_gj))
+            filas_a_restar = list(matriz_temp_gj.filas.keys()).copy()
             filas_a_restar.remove(pos_pivotes)
             for fila in filas_a_restar:
+                multiplicador: float = matriz_temp_gj[fila, pos_pivotes]
                 if A[fila, pos_pivotes] != 0:
-                    for nodo in A.filas[pos_pivotes]:
-                        matriz_temp_gj[fila, nodo[0]] = nodo - matriz_temp_gj[fila, pos_pivotes]*matriz_temp_gj[pos_pivotes, nodo[0]]
-    #Falta hacer que tambien se modifique b cuando hago g-j (arriba)
+                    nodo = A.filas[pos_pivotes].raiz
+                    while nodo is not None:
+                        matriz_temp_gj[fila, nodo.valor[0]] = matriz_temp_gj[fila, nodo.valor[0]] - multiplicador*matriz_temp_gj[pos_pivotes, nodo.valor[0]]
+                        nodo = nodo.siguiente
+
+                    b[fila, 0] = b[fila, 0] - b[pos_pivotes, 0]*multiplicador
+
     res = []
+    print(repr(matriz_temp_gj), repr(b))
+    sol_unica = True
+    pos_error = None
+    for pos_pivotes in range(cantPivotes):
+        if matriz_temp_gj[pos_pivotes, pos_pivotes] == 0:
+            sol_unica = False
+            pos_error = pos_pivotes
+
+    if not sol_unica:
+        if b[pos_error, 0] != 0:
+            raise ArithmeticError("El sistema no tiene solucion")
+        else:
+            raise ArithmeticError("El sistema tiene infinitas soluciones")
+
+    for num in range(b.shape[0]):
+        res.append(b[num, 0])
+
+    """"
     if matriz_temp_gj.shape[0] < A.shape[0]:
         raise ArithmeticError("El sistema tiene infinitas soluciones")
     else:
@@ -256,13 +301,16 @@ def GaussJordan(A, b):
                 raise ArithmeticError("El sistema no tiene solucion")
             else:
                 ultimoNodo = fila.nodoPorCondicion(lambda nodo_temp: nodo_temp.siguiente is None)
-                res.append(ultimoNodo[1])
-        return res
+                res.append(ultimoNodo[1])"""
+    return res
 
 A = MatrizRala(3, 3)
 A[0, 0] = 1
+A[0, 2] = -2
 A[1, 1] = 2
 A[0, 1] = 3
+A[2, 1] = 2
+A[2, 2] = 7
 
 B = MatrizRala(3, 3)
 
@@ -272,14 +320,16 @@ B[2, 2] = 4
 B[2, 1] = 2
 B[0, 1] = 1
 
-print(repr(A))
-A * 4
+A_mas_B = A + B
 print(repr(A))
 print(repr(B))
-print(A @ B)
-
-A[0,0] = 0
+print("A+B: ", repr(A_mas_B))
+A * 4
 print(repr(A))
+A[0, 0] = 0
+print("cero", repr(A))
+print(repr(B))
+print(A @ B)
 
 C = MatrizRala(2, 3)
 D = MatrizRala(3, 3)
@@ -287,11 +337,36 @@ D = MatrizRala(3, 3)
 C[0, 0] = 1
 C[0, 2] = 3
 C[1, 2] = 4
+C[1, 2] = 2
 
 D[2, 0] = 3
 D[1, 1] = 2
+D[2, 1] = 4
 
 print("C: ", repr(C), " D: ", repr(D))
 
 E = C @ D
 print("E: ", repr(E))
+
+F = MatrizRala(3,3)
+F[0, 0] = 2
+F[1, 0] = -4
+F[0, 1] = 8
+F[1, 1] = 6
+F[0, 2] = 4
+F[1, 2] = -8
+F[2, 0] = -1
+F[2, 1] = -1
+F[2, 2] = -2
+
+print(f"F: {repr(F)}")
+b = MatrizRala(3, 1)
+b[0, 0] = 1
+b[1, 0] = 0
+b[2, 0] = -2
+print(f"b: {repr(b)}")
+print(f"Gauss-Jordan de F con b: {GaussJordan(F, b)}")
+
+#Ejercicio 3
+
+matriz_papers = MatrizRala(11, 11)
