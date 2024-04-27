@@ -50,7 +50,9 @@ class ListaEnlazada:
         elif len(self) == 1:
             self.raiz = None
         else:
-            anteUltimoNodo = self.nodoPorCondicion(lambda n: n.siguiente.siguiente is None)
+            anteUltimoNodo = self.nodoPorCondicion(
+                lambda n: n.siguiente.siguiente is None
+            )
             anteUltimoNodo.siguiente = None
 
         self.longitud -= 1
@@ -60,13 +62,13 @@ class ListaEnlazada:
     def nodoPorCondicion(self, funcionCondicion):
         # Devuelve el primer nodo que satisface la funcion "funcionCondicion"
         if self.longitud == 0:
-            raise IndexError('No hay nodos en la lista')
+            raise IndexError("No hay nodos en la lista")
 
         nodoActual = self.raiz
         while not funcionCondicion(nodoActual):
             nodoActual = nodoActual.siguiente
             if nodoActual is None:
-                raise ValueError('Ningun nodo en la lista satisface la condicion')
+                raise ValueError("Ningun nodo en la lista satisface la condicion")
 
         return nodoActual
 
@@ -85,12 +87,12 @@ class ListaEnlazada:
             return self.current.valor
 
     def __repr__(self):
-        res = 'ListaEnlazada([ '
+        res = "ListaEnlazada([ "
 
         for valor in self:
-            res += str(valor) + ' '
+            res += str(valor) + " "
 
-        res += '])'
+        res += "])"
 
         return res
 
@@ -137,7 +139,9 @@ class MatrizRala:
                     self.filas.pop(Idx[0])
                 else:
                     nuevaFila: ListaEnlazada = ListaEnlazada()
-                    nodoAEliminar = self.filas[Idx[0]].nodoPorCondicion(lambda nodo_temp: nodo_temp.valor[0] == Idx[1])
+                    nodoAEliminar = self.filas[Idx[0]].nodoPorCondicion(
+                        lambda nodo_temp: nodo_temp.valor[0] == Idx[1]
+                    )
                     for nodo in self.filas[Idx[0]]:
                         if nodo[0] != nodoAEliminar.valor[0]:
                             nuevaFila.push(nodo)
@@ -154,7 +158,9 @@ class MatrizRala:
 
             if not complete:
                 nodoAnterior = self.filas[Idx[0]].nodoPorCondicion(
-                    lambda nodo_temp: nodo_temp.siguiente is None or nodo_temp.siguiente.valor[0] > Idx[1])
+                    lambda nodo_temp: nodo_temp.siguiente is None
+                    or nodo_temp.siguiente.valor[0] > Idx[1]
+                )
                 self.filas[Idx[0]].insertarDespuesDeNodo([Idx[1], v], nodoAnterior)
 
         else:
@@ -166,15 +172,7 @@ class MatrizRala:
     def __mul__(self, k):
         # Esta funcion implementa el producto matriz-escalar -> A * k
         if k == 0:
-
-            claves: List[int] = list(self.filas.keys()).copy()
-            i = 0
-            while len(self.filas) > 0:
-                while len(self.filas[i]) > 0:
-                    self.filas[i].pop()
-
-                self.filas.pop(claves[i])
-                i += 1
+            return MatrizRala(self.shape[0], self.shape[1])
 
         else:
 
@@ -222,7 +220,9 @@ class MatrizRala:
         #        res[i, j] = self[i, j] + other[i, j]
 
         # OTRA FORMA: MAS EFICIENTE?
-        interseccion_filas: List[int] = list(set(self.filas.keys()) & set(other.filas.keys()))
+        interseccion_filas: List[int] = list(
+            set(self.filas.keys()) & set(other.filas.keys())
+        )
         for nro_fila in interseccion_filas:
             nodo_self = self.filas[nro_fila].raiz
             nodo_other = other.filas[nro_fila].raiz
@@ -237,7 +237,9 @@ class MatrizRala:
                     nodo_other = nodo_other.siguiente
 
                 else:
-                    res[nro_fila, nodo_self.valor[0]] = nodo_self.valor[1] + nodo_other.valor[1]
+                    res[nro_fila, nodo_self.valor[0]] = (
+                        nodo_self.valor[1] + nodo_other.valor[1]
+                    )
                     nodo_self = nodo_self.siguiente
                     nodo_other = nodo_other.siguiente
 
@@ -270,27 +272,29 @@ class MatrizRala:
     def __matmul__(self, other):
         # Esta funcion implementa el producto matricial (notado en Python con el operador "@" ) -> A @ B
         if self.shape[1] != other.shape[0]:
-            raise ValueError("Las matrices no tienen tamaños validos para el producto matricial")
+            raise ValueError(
+                "Las matrices no tienen tamaños validos para el producto matricial"
+            )
 
         res: MatrizRala = MatrizRala(self.shape[0], other.shape[1])
         for i in range(self.shape[0]):
             for j in range(other.shape[1]):
                 posCalculating = 0
                 for k in range(self.shape[1]):
-                    posCalculating += (self[i, k] * other[k, j])
+                    posCalculating += self[i, k] * other[k, j]
                 res[i, j] = posCalculating
         return res
 
     def __repr__(self):
-        res = 'MatrizRala([ \n'
+        res = "MatrizRala([ \n"
         for i in range(self.shape[0]):
-            res += '    [ '
+            res += "    [ "
             for j in range(self.shape[1]):
-                res += str(self[i, j]) + ' '
+                res += str(self[i, j]) + " "
 
-            res += ']\n'
+            res += "]\n"
 
-        res += '])'
+        res += "])"
 
         return res
 
@@ -340,8 +344,11 @@ def GaussJordan(A, b):
                     if A[fila, pos_pivotes] != 0:
                         nodo = A.filas[pos_pivotes].raiz
                         while nodo is not None:
-                            matriz_temp_gj[fila, nodo.valor[0]] = matriz_temp_gj[fila, nodo.valor[0]] - multiplicador * \
-                                                                  matriz_temp_gj[pos_pivotes, nodo.valor[0]]
+                            matriz_temp_gj[fila, nodo.valor[0]] = (
+                                matriz_temp_gj[fila, nodo.valor[0]]
+                                - multiplicador
+                                * matriz_temp_gj[pos_pivotes, nodo.valor[0]]
+                            )
                             nodo = nodo.siguiente
 
                         b[fila, 0] = b[fila, 0] - b[pos_pivotes, 0] * multiplicador
@@ -441,22 +448,32 @@ print("E: ", repr(E))
 
 
 def solicitar_sistema_a_resolver():
-    print("Tranquilo/a con certeza recolectamos todos los datos para formar el sistema Ax = b")
-    size_of_matrix: int = int(input(
-        "Cuantas filas/columnas queres que tenga tu matriz (va a ser cuadrada asi que solo se necesita un valor): "))
+    print(
+        "Tranquilo/a con certeza recolectamos todos los datos para formar el sistema Ax = b"
+    )
+    size_of_matrix: int = int(
+        input(
+            "Cuantas filas/columnas queres que tenga tu matriz (va a ser cuadrada asi que solo se necesita un valor): "
+        )
+    )
 
     A = MatrizRala(size_of_matrix, size_of_matrix)
     for nro_fila in range(size_of_matrix):
         for nro_columna in range(size_of_matrix):
             valor = int(
-                input(f"ingresar el valor de la matriz en la fila {nro_fila + 1} y columna {nro_columna + 1}: "))
+                input(
+                    f"ingresar el valor de la matriz en la fila {nro_fila + 1} y columna {nro_columna + 1}: "
+                )
+            )
             if valor != 0:
                 A[nro_fila, nro_columna] = valor
 
     print(f"A: {repr(A)}")
     b = MatrizRala(size_of_matrix, 1)
     for nro_fila in range(size_of_matrix):
-        valor = int(input(f"ingresar el valor de la solucion en la fila {nro_fila + 1}: "))
+        valor = int(
+            input(f"ingresar el valor de la solucion en la fila {nro_fila + 1}: ")
+        )
         if valor != 0:
             b[nro_fila, 0] = valor
 
@@ -471,16 +488,23 @@ print(f"Gauss-Jordan de A con b: {GaussJordan(matriz_A, matriz_b)}")"""
 
 # Ejercicio 3
 
+
 def solicitar_matriz():
     print("Tranquilo/a con certeza recolectamos todos los datos para formar la matriz")
-    size_of_matrix: int = int(input(
-        "Cuantas filas/columnas queres que tenga tu matriz (va a ser cuadrada asi que solo se necesita un valor): "))
+    size_of_matrix: int = int(
+        input(
+            "Cuantas filas/columnas queres que tenga tu matriz (va a ser cuadrada asi que solo se necesita un valor): "
+        )
+    )
 
     A = MatrizRala(size_of_matrix, size_of_matrix)
     for nro_fila in range(size_of_matrix):
         for nro_columna in range(size_of_matrix):
             valor = int(
-                input(f"ingresar el valor de la matriz en la fila {nro_fila + 1} y columna {nro_columna + 1}: "))
+                input(
+                    f"ingresar el valor de la matriz en la fila {nro_fila + 1} y columna {nro_columna + 1}: "
+                )
+            )
             if valor != 0:
                 A[nro_fila, nro_columna] = valor
 
