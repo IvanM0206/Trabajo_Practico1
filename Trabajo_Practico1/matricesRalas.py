@@ -159,7 +159,7 @@ class MatrizRala:
             if not complete:
                 nodoAnterior = self.filas[Idx[0]].nodoPorCondicion(
                     lambda nodo_temp: nodo_temp.siguiente is None
-                                      or nodo_temp.siguiente.valor[0] > Idx[1]
+                    or nodo_temp.siguiente.valor[0] > Idx[1]
                 )
                 self.filas[Idx[0]].insertarDespuesDeNodo([Idx[1], v], nodoAnterior)
 
@@ -172,17 +172,17 @@ class MatrizRala:
     def __mul__(self, k):
         # Esta funcion implementa el producto matriz-escalar -> A * k
 
-        """        if k == 0:
+        """if k == 0:
 
-            claves: List[int] = list(self.filas.keys()).copy()
-            i = 0
-            while len(self.filas) > 0:
-                while len(self.filas[i]) > 0:
-                    self.filas[i].pop()
+        claves: List[int] = list(self.filas.keys()).copy()
+        i = 0
+        while len(self.filas) > 0:
+            while len(self.filas[i]) > 0:
+                self.filas[i].pop()
 
-                self.filas.pop(claves[i])
-                i += 1
-                """
+            self.filas.pop(claves[i])
+            i += 1
+        """
 
         if k == 0:
             return MatrizRala(self.shape[0], self.shape[1])
@@ -261,7 +261,7 @@ class MatrizRala:
 
                 else:
                     res[nro_fila, nodo_self.valor[0]] = (
-                            nodo_self.valor[1] + nodo_other.valor[1]
+                        nodo_self.valor[1] + nodo_other.valor[1]
                     )
                     nodo_self = nodo_self.siguiente
                     nodo_other = nodo_other.siguiente
@@ -296,17 +296,26 @@ class MatrizRala:
         # Esta funcion implementa el producto matricial (notado en Python con el operador "@" ) -> A @ B
         if self.shape[1] != other.shape[0]:
             raise ValueError(
-                "Las matrices no tienen tamaños validos para el producto matricial"
+                "Las matrices no tienen tamaños válidos para el producto matricial"
             )
 
-        res: MatrizRala = MatrizRala(self.shape[0], other.shape[1])
-        for i in range(self.shape[0]):
-            for j in range(other.shape[1]):
-                posCalculating = 0
-                for k in range(self.shape[1]):
-                    posCalculating += self[i, k] * other[k, j]
-                res[i, j] = posCalculating
-        return res
+        C: MatrizRala = MatrizRala(self.shape[0], other.shape[1])
+
+        for filaOrigen in self.filas.keys():
+            nodoSelf = self.filas[filaOrigen].raiz
+
+            while nodoSelf is not None:
+                if nodoSelf.valor[0] in other.filas.keys():
+                    nodoOther = other.filas[nodoSelf.valor[0]].raiz
+                    while nodoOther is not None:
+                        C[filaOrigen, nodoOther.valor[0]] += (
+                            nodoSelf.valor[1] * nodoOther.valor[1]
+                        )
+                        nodoOther = nodoOther.siguiente
+
+                nodoSelf = nodoSelf.siguiente
+
+        return C
 
     def __repr__(self):
         res = "MatrizRala([ \n"
@@ -329,8 +338,6 @@ def GaussJordan(A, b):
 
     cantPivotes = min(A.shape[0], A.shape[1])
     matriz_temp_gj = A
-    volver_a_intentar = (False, None)
-    primera_vez = True
     pos_pivotes_usados: List[int] = []
     pivote = None
     pos_columna_pivote = None
@@ -340,7 +347,6 @@ def GaussJordan(A, b):
         if pos_fila_pivotes not in matriz_temp_gj.filas.keys():
             if b[pos_fila_pivotes, 0] != 0:
                 raise ArithmeticError("El sistema no tiene solucion")
-                break
         else:
 
             nodo = matriz_temp_gj.filas[pos_fila_pivotes].raiz
@@ -373,9 +379,8 @@ def GaussJordan(A, b):
                 for columna in range(matriz_temp_gj.shape[1]):
                     if matriz_temp_gj[pos_fila_pivotes, columna] != 0:
                         matriz_temp_gj[fila, columna] = (
-                                matriz_temp_gj[fila, columna]
-                                - multiplicador
-                                * matriz_temp_gj[pos_fila_pivotes, columna]
+                            matriz_temp_gj[fila, columna]
+                            - multiplicador * matriz_temp_gj[pos_fila_pivotes, columna]
                         )
 
                 b[fila, 0] = b[fila, 0] - b[pos_fila_pivotes, 0] * multiplicador
@@ -392,7 +397,6 @@ def GaussJordan(A, b):
     for nro_fila in filas_restantes:
         if b[nro_fila, 0] != 0:
             raise ArithmeticError("El sistema no tiene solucion")
-            break
 
         raise ArithmeticError("El sistema tiene infinitas soluciones")
 
@@ -403,197 +407,3 @@ def GaussJordan(A, b):
                 res[nodo[0], 0] = b[nro_fila, 0]
 
     return res
-
-
-""" sol_unica = True
-    pos_error = None
-    for pos_pivotes in range(cantPivotes):
-        if matriz_temp_gj[pos_pivotes, pos_pivotes] == 0:
-            sol_unica = False
-            pos_error = pos_pivotes
-
-    if not sol_unica:
-        if b[pos_error, 0] != 0:
-            raise ArithmeticError("El sistema no tiene solucion")
-        else:
-            raise ArithmeticError("El sistema tiene infinitas soluciones")"""
-
-""""
-    
-    if matriz_temp_gj.shape[0] < A.shape[0]:
-        raise ArithmeticError("El sistema tiene infinitas soluciones")
-    else:
-        for fila in matriz_temp_gj.filas.values():
-            if len(fila) == 1 and fila.raiz[0] == A.shape[0]+1:
-                raise ArithmeticError("El sistema no tiene solucion")
-            else:
-                ultimoNodo = fila.nodoPorCondicion(lambda nodo_temp: nodo_temp.siguiente is None)
-                res.append(ultimoNodo[1])"""
-
-"""A = MatrizRala(2, 3)
-A[0, 0] = 1
-A[0, 2] = -2
-A[1, 1] = 2
-A[0, 1] = 3
-
-
-B = MatrizRala(2, 3)
-
-B[0, 0] = 1
-B[0, 2] = 2
-B[0, 1] = 1
-
-A_mas_B = A + B
-print(repr(A))
-print(repr(B))
-print("A+B: ", repr(A_mas_B))
-A * 4
-print(repr(A))
-A[0, 0] = 0
-print("cero", repr(A))
-print(repr(B))
-print(A @ B)"""
-
-C = MatrizRala(2, 3)
-D = MatrizRala(3, 3)
-
-C[0, 0] = 1
-C[0, 2] = 3
-C[1, 2] = 4
-C[1, 2] = 2
-
-D[2, 0] = 3
-D[1, 1] = 2
-D[2, 1] = 4
-
-print("C: ", repr(C), " D: ", repr(D))
-
-E = C @ D
-print("E: ", repr(E))
-
-
-def solicitar_sistema_a_resolver():
-    print(
-        "Tranquilo/a con certeza recolectamos todos los datos para formar el sistema Ax = b"
-    )
-    size_of_matrix_row: int = int(
-        input(
-            "Cuantas filas queres que tenga tu matriz: "
-        )
-    )
-
-    size_of_matrix_column: int = int(
-        input(
-            "Cuantas columnas queres que tenga tu matriz: "
-        )
-    )
-
-    A = MatrizRala(size_of_matrix_row, size_of_matrix_column)
-    for nro_fila in range(size_of_matrix_row):
-        for nro_columna in range(size_of_matrix_column):
-            valor = float(
-                input(
-                    f"ingresar el valor de la matriz en la fila {nro_fila + 1} y columna {nro_columna + 1}: "
-                )
-            )
-            if valor != 0:
-                A[nro_fila, nro_columna] = valor
-
-    print(f"A: {repr(A)}")
-    b = MatrizRala(size_of_matrix_row, 1)
-    for nro_fila in range(size_of_matrix_row):
-        valor = float(
-            input(f"ingresar el valor de la solucion en la fila {nro_fila + 1}: ")
-        )
-        if valor != 0:
-            b[nro_fila, 0] = valor
-
-    print(f"b: {repr(b)}")
-    print(f"El sistema a resolver es {A}x = {b}")
-    return A, b
-
-
-matriz_A, matriz_b = solicitar_sistema_a_resolver()
-print(f"Gauss-Jordan de A con b: {GaussJordan(matriz_A, matriz_b)}")
-
-
-# Ejercicio 3
-
-
-def solicitar_matriz():
-    print("Tranquilo/a con certeza recolectamos todos los datos para formar la matriz")
-    size_of_matrix: int = int(
-        input(
-            "Cuantas filas/columnas queres que tenga tu matriz (va a ser cuadrada asi que solo se necesita un valor): "
-        )
-    )
-
-    A = MatrizRala(size_of_matrix, size_of_matrix)
-    for nro_fila in range(size_of_matrix):
-        for nro_columna in range(size_of_matrix):
-            valor = int(
-                input(
-                    f"ingresar el valor de la matriz en la fila {nro_fila + 1} y columna {nro_columna + 1}: "
-                )
-            )
-            if valor != 0:
-                A[nro_fila, nro_columna] = valor
-
-    print(f"la matriz es: {repr(A)}")
-    return A
-
-
-# matriz_W = solicitar_matriz()
-"""matriz_W = MatrizRala(11, 11)
-
-for pos in range(matriz_W.shape[0]):
-    matriz_W[pos, pos] = 1
-
-matriz_W[1, 0] = 1
-matriz_W[6, 0] = 1
-matriz_W[5, 0] = 1
-matriz_W[0, 2] = 1
-matriz_W[0, 3] = 1
-matriz_W[0, 4] = 1
-matriz_W[8, 5] = 1
-matriz_W[5, 6] = 1
-matriz_W[6, 7] = 1
-matriz_W[7, 8] = 1
-matriz_W[6, 8] = 1
-matriz_W[9, 8] = 1
-matriz_W[4, 10] = 1
-
-print(f"W: {matriz_W}")
-d = float(input("Valor de probabilidad elegido: "))
-print(f"d: {d}")
-
-matriz_D = MatrizRala(matriz_W.shape[0], matriz_W.shape[0])
-
-for pos in range(matriz_D.shape[0]):
-    valor_pos = 0
-    for fila in range(matriz_W.shape[0]):
-        valor_pos += matriz_W[fila, pos]
-
-    matriz_D[pos, pos] = valor_pos
-
-print(f"D: {matriz_D}")
-
-b = MatrizRala(matriz_W.shape[0], 1)
-
-for nro_fila in range(b.shape[0]):
-    b[nro_fila, 0] = (1 - d) / (b.shape[0])
-
-print(f"b: {b}")
-
-matriz_identidad = MatrizRala(matriz_W.shape[0], matriz_W.shape[1])
-for nro_fila in range(matriz_identidad.shape[0]):
-    matriz_identidad[nro_fila, nro_fila] = 1
-
-print(f"Identidad: {matriz_identidad}")
-
-matriz_A = matriz_identidad - d * matriz_W @ matriz_D
-
-print(matriz_A)
-
-print(f"Gauss-Jordan de 1 - d*W*D con (1-d)/11: {GaussJordan(matriz_A, b)}")
-"""
