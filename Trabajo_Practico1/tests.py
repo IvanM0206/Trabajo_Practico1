@@ -3,7 +3,7 @@
 #   2- Correr en la terminal "pytest tests.py"
 
 import pytest
-from matricesRalas import MatrizRala
+from matricesRalas import MatrizRala, GaussJordan
 import numpy as np
 
 
@@ -111,3 +111,130 @@ class TestProductoMatricial:
         C2 = Id @ A
         assert C1[0, 0] == 1 and C1[0, 2] == 3 and C1[1, 2] == 4 and C2[0, 0] == 1 and C2[0, 2] == 3 and C2[
             1, 2] == 4 and C1.shape == C2.shape and C1.shape == A.shape
+
+
+class TestGaussJordan:
+    def test_gauss_jordan_matriz_singular(self):
+        A = MatrizRala(2, 2)
+        A[0, 0] = 1
+        A[0, 1] = 2
+        A[1, 0] = 2
+        A[1, 1] = 4
+
+        b = MatrizRala(2, 1)
+        b[0, 0] = 3
+        b[1, 0] = 6
+
+        with pytest.raises(Exception) as e_info:
+            GaussJordan(A, b)
+
+    def test_gauss_jordan_pivote_cero(self):
+        A = MatrizRala(2, 2)
+        A[0, 0] = 0
+        A[0, 1] = 2
+        A[1, 0] = 0
+        A[1, 1] = 3
+
+        b = MatrizRala(2, 1)
+        b[0, 0] = 1
+        b[1, 0] = 3
+
+        with pytest.raises(Exception) as e_info:
+            GaussJordan(A, b)
+
+    def test_gauss_jordan_infinitas_soluciones(self):
+        A = MatrizRala(2, 3)
+        A[0, 0] = 1
+        A[0, 1] = 2
+        A[0, 2] = 3
+        A[1, 0] = 4
+        A[1, 1] = 5
+        A[1, 2] = 6
+
+        b = MatrizRala(2, 1)
+        b[0, 0] = 7
+        b[1, 0] = 8
+
+        with pytest.raises(Exception) as e_info:
+            GaussJordan(A, b)
+
+    def test_gauss_jordan_infinitas_soluciones(self):
+        A = MatrizRala(3, 3)
+        A[0, 1] = 20
+        A[1, 2] = 2
+        A[2, 0] = 23
+
+        C = MatrizRala(3, 3)
+        C[0, 1] = 20
+        C[1, 2] = 2
+        C[2, 0] = 23
+
+        b = MatrizRala(3, 1)
+        b[0, 0] = 1
+        b[1, 0] = 1
+        b[2, 0] = 1
+
+        d = MatrizRala(3, 1)
+        d[0, 0] = 1
+        d[1, 0] = 1
+        d[2, 0] = 1
+
+        assert (C @ GaussJordan(A, b)) == d
+
+#####
+
+    def test_gauss_jordan_matriz_no_cuadrada(self):
+        # Prueba para verificar el manejo de una matriz no cuadrada
+        A = MatrizRala(3, 2)
+        A[0, 0] = 2
+        A[0, 1] = 3
+        A[1, 0] = 1
+        A[1, 1] = -1
+        A[2, 0] = 3
+        A[2, 1] = 2
+
+        b = MatrizRala(3, 1)
+        b[0, 0] = 6
+        b[1, 0] = 1
+        b[2, 0] = 5
+
+        solucion = GaussJordan(A, b)
+        solucion_bien = MatrizRala(2, 1)
+        solucion_bien[0, 0] = 1
+        solucion_bien[1, 0] = 2
+
+    def test_gauss_jordan_singular_no_cuadrada(self):
+        # Prueba para verificar el manejo de una matriz singular no cuadrada
+        A = MatrizRala(3, 2)
+        A[0, 0] = 1
+        A[0, 1] = 2
+        A[1, 0] = 2
+        A[1, 1] = 4
+        A[2, 0] = 3
+        A[2, 1] = 6
+
+        b = MatrizRala(3, 1)
+        b[0, 0] = 3
+        b[1, 0] = 6
+        b[2, 0] = 9
+
+        with pytest.raises(ArithmeticError, match="El sistema no tiene solucion"):
+            GaussJordan(A, b)
+
+    def test_gauss_jordan_infinitas_soluciones_no_cuadrada(self):
+        # Prueba para verificar el manejo de un sistema con infinitas soluciones en una matriz no cuadrada
+        A = MatrizRala(3, 2)
+        A[0, 0] = 1
+        A[0, 1] = 2
+        A[1, 0] = 2
+        A[1, 1] = 4
+        A[2, 0] = 3
+        A[2, 1] = 6
+
+        b = MatrizRala(3, 1)
+        b[0, 0] = 3
+        b[1, 0] = 6
+        b[2, 0] = 9
+
+        with pytest.raises(ArithmeticError, match="El sistema tiene infinitas soluciones"):
+            GaussJordan(A, b)

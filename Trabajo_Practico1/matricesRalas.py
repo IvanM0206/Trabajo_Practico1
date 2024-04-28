@@ -159,7 +159,7 @@ class MatrizRala:
             if not complete:
                 nodoAnterior = self.filas[Idx[0]].nodoPorCondicion(
                     lambda nodo_temp: nodo_temp.siguiente is None
-                    or nodo_temp.siguiente.valor[0] > Idx[1]
+                                      or nodo_temp.siguiente.valor[0] > Idx[1]
                 )
                 self.filas[Idx[0]].insertarDespuesDeNodo([Idx[1], v], nodoAnterior)
 
@@ -171,6 +171,19 @@ class MatrizRala:
 
     def __mul__(self, k):
         # Esta funcion implementa el producto matriz-escalar -> A * k
+
+        """        if k == 0:
+
+            claves: List[int] = list(self.filas.keys()).copy()
+            i = 0
+            while len(self.filas) > 0:
+                while len(self.filas[i]) > 0:
+                    self.filas[i].pop()
+
+                self.filas.pop(claves[i])
+                i += 1
+                """
+
         if k == 0:
             return MatrizRala(self.shape[0], self.shape[1])
 
@@ -181,6 +194,16 @@ class MatrizRala:
                     nodo[1] *= k
 
         return self
+
+    def __eq__(self, other):
+        if self.shape != other.shape:
+            raise ValueError("Las matrices son de distinto tamaño")
+
+        for fila in range(self.shape[0]):
+            for columna in range(self.shape[1]):
+                if self[fila, columna] != other[fila, columna]:
+                    return False
+        return True
 
     def __rmul__(self, k):
         # Esta funcion implementa el producto escalar-matriz -> k * A
@@ -238,7 +261,7 @@ class MatrizRala:
 
                 else:
                     res[nro_fila, nodo_self.valor[0]] = (
-                        nodo_self.valor[1] + nodo_other.valor[1]
+                            nodo_self.valor[1] + nodo_other.valor[1]
                     )
                     nodo_self = nodo_self.siguiente
                     nodo_other = nodo_other.siguiente
@@ -308,74 +331,76 @@ def GaussJordan(A, b):
     matriz_temp_gj = A
     volver_a_intentar = (False, None)
     primera_vez = True
+    pos_pivotes_usados: List[int] = []
+    pivote = None
+    pos_columna_pivote = None
 
-    while primera_vez or volver_a_intentar[0]:
+    for pos_fila_pivotes in range(cantPivotes):
+        print(matriz_temp_gj)
+        if pos_fila_pivotes not in matriz_temp_gj.filas.keys():
+            if b[pos_fila_pivotes, 0] != 0:
+                raise ArithmeticError("El sistema no tiene solucion")
+                break
+        else:
 
-        for pos_pivotes in range(cantPivotes):
-            pivote = A[pos_pivotes, pos_pivotes]
+            nodo = matriz_temp_gj.filas[pos_fila_pivotes].raiz
+            encontrado = False
+            while nodo is not None and not encontrado:
+                if nodo.valor[1] != 0 and nodo.valor[0] not in pos_pivotes_usados:
+                    encontrado = True
+                    pos_pivotes_usados.append(nodo.valor[0])
+                    pos_columna_pivote = nodo.valor[0]
+                    pivote = A[pos_fila_pivotes, pos_columna_pivote]
+
+                nodo = nodo.siguiente
+
             print("pivote", pivote)
 
-            if pivote == 0:
-                print(volver_a_intentar[0] and volver_a_intentar[1] == pos_pivotes)
-                if volver_a_intentar[0] and volver_a_intentar[1] == pos_pivotes:
-                    volver_a_intentar = (False, pos_pivotes)
-                    break
-                else:
-                    if not volver_a_intentar[0]:
-                        volver_a_intentar = (True, pos_pivotes)
+            if pivote != 1:
+                nodo = matriz_temp_gj.filas[pos_fila_pivotes].raiz
+                while nodo is not None:
+                    print("pos", nodo.valor)
+                    matriz_temp_gj[pos_fila_pivotes, nodo.valor[0]] /= pivote
+                    nodo = nodo.siguiente
 
-            else:
-                if pivote != 1:
-                    if volver_a_intentar[1] == pos_pivotes:
-                        volver_a_intentar = (False, pos_pivotes)
-                    nodo = matriz_temp_gj.filas[pos_pivotes].raiz
-                    while nodo is not None:
-                        print("pos", nodo.valor)
-                        matriz_temp_gj[pos_pivotes, nodo.valor[0]] /= pivote
-                        nodo = nodo.siguiente
+                b[pos_fila_pivotes, 0] /= pivote
 
-                    b[pos_pivotes, 0] /= pivote
-
-                print("primera", repr(matriz_temp_gj))
-                filas_a_restar = list(matriz_temp_gj.filas.keys()).copy()
-                filas_a_restar.remove(pos_pivotes)
-                for fila in filas_a_restar:
-                    multiplicador: float = matriz_temp_gj[fila, pos_pivotes]
-                    if A[fila, pos_pivotes] != 0:
-                        nodo = A.filas[pos_pivotes].raiz
-                        while nodo is not None:
-                            matriz_temp_gj[fila, nodo.valor[0]] = (
-                                matriz_temp_gj[fila, nodo.valor[0]]
+            print("primera", repr(matriz_temp_gj))
+            filas_a_restar = list(matriz_temp_gj.filas.keys()).copy()
+            filas_a_restar.remove(pos_fila_pivotes)
+            for fila in filas_a_restar:
+                multiplicador: float = matriz_temp_gj[fila, pos_columna_pivote]
+                for columna in range(matriz_temp_gj.shape[1]):
+                    if matriz_temp_gj[pos_fila_pivotes, columna] != 0:
+                        matriz_temp_gj[fila, columna] = (
+                                matriz_temp_gj[fila, columna]
                                 - multiplicador
-                                * matriz_temp_gj[pos_pivotes, nodo.valor[0]]
-                            )
-                            nodo = nodo.siguiente
+                                * matriz_temp_gj[pos_fila_pivotes, columna]
+                        )
 
-                        b[fila, 0] = b[fila, 0] - b[pos_pivotes, 0] * multiplicador
+                b[fila, 0] = b[fila, 0] - b[pos_fila_pivotes, 0] * multiplicador
 
-        primera_vez = False
+        # primera_vez = False
 
-    res = [None for x in range(cantPivotes)]
+    res = MatrizRala(A.shape[1], 1)
 
     print(repr(matriz_temp_gj), repr(b))
 
-    if len(list(matriz_temp_gj.filas.keys())) != cantPivotes:
-
-        filas = set([x for x in range(cantPivotes)])
-        filas_restantes = filas - set(matriz_temp_gj.filas.keys())
-        for nro_fila in filas_restantes:
-            if b[nro_fila, 0] != 0:
-                raise ArithmeticError("El sistema no tiene solucion")
-                break
+    filas = set([x for x in range(A.shape[0])])
+    filas_restantes = filas - set(matriz_temp_gj.filas.keys())
+    print(filas, filas_restantes)
+    for nro_fila in filas_restantes:
+        if b[nro_fila, 0] != 0:
+            raise ArithmeticError("El sistema no tiene solucion")
+            break
 
         raise ArithmeticError("El sistema tiene infinitas soluciones")
 
-    else:
-        for nro_fila, fila in matriz_temp_gj.filas.items():
-            for nodo in fila:
-                print(nodo)
-                if nodo[1] != 0:
-                    res[nodo[0]] = b[nro_fila, 0]
+    for nro_fila, fila in matriz_temp_gj.filas.items():
+        for nodo in fila:
+            # print(nodo)
+            if nodo[1] != 0:
+                res[nodo[0], 0] = b[nro_fila, 0]
 
     return res
 
@@ -451,16 +476,22 @@ def solicitar_sistema_a_resolver():
     print(
         "Tranquilo/a con certeza recolectamos todos los datos para formar el sistema Ax = b"
     )
-    size_of_matrix: int = int(
+    size_of_matrix_row: int = int(
         input(
-            "Cuantas filas/columnas queres que tenga tu matriz (va a ser cuadrada asi que solo se necesita un valor): "
+            "Cuantas filas queres que tenga tu matriz: "
         )
     )
 
-    A = MatrizRala(size_of_matrix, size_of_matrix)
-    for nro_fila in range(size_of_matrix):
-        for nro_columna in range(size_of_matrix):
-            valor = int(
+    size_of_matrix_column: int = int(
+        input(
+            "Cuantas columnas queres que tenga tu matriz: "
+        )
+    )
+
+    A = MatrizRala(size_of_matrix_row, size_of_matrix_column)
+    for nro_fila in range(size_of_matrix_row):
+        for nro_columna in range(size_of_matrix_column):
+            valor = float(
                 input(
                     f"ingresar el valor de la matriz en la fila {nro_fila + 1} y columna {nro_columna + 1}: "
                 )
@@ -469,9 +500,9 @@ def solicitar_sistema_a_resolver():
                 A[nro_fila, nro_columna] = valor
 
     print(f"A: {repr(A)}")
-    b = MatrizRala(size_of_matrix, 1)
-    for nro_fila in range(size_of_matrix):
-        valor = int(
+    b = MatrizRala(size_of_matrix_row, 1)
+    for nro_fila in range(size_of_matrix_row):
+        valor = float(
             input(f"ingresar el valor de la solucion en la fila {nro_fila + 1}: ")
         )
         if valor != 0:
@@ -482,8 +513,8 @@ def solicitar_sistema_a_resolver():
     return A, b
 
 
-"""matriz_A, matriz_b = solicitar_sistema_a_resolver()
-print(f"Gauss-Jordan de A con b: {GaussJordan(matriz_A, matriz_b)}")"""
+matriz_A, matriz_b = solicitar_sistema_a_resolver()
+print(f"Gauss-Jordan de A con b: {GaussJordan(matriz_A, matriz_b)}")
 
 
 # Ejercicio 3
@@ -513,7 +544,7 @@ def solicitar_matriz():
 
 
 # matriz_W = solicitar_matriz()
-matriz_W = MatrizRala(11, 11)
+"""matriz_W = MatrizRala(11, 11)
 
 for pos in range(matriz_W.shape[0]):
     matriz_W[pos, pos] = 1
@@ -565,3 +596,4 @@ matriz_A = matriz_identidad - d * matriz_W @ matriz_D
 print(matriz_A)
 
 print(f"Gauss-Jordan de 1 - d*W*D con (1-d)/11: {GaussJordan(matriz_A, b)}")
+"""
