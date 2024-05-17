@@ -159,7 +159,7 @@ class MatrizRala:
             if not complete:
                 nodoAnterior = self.filas[Idx[0]].nodoPorCondicion(
                     lambda nodo_temp: nodo_temp.siguiente is None
-                                      or nodo_temp.siguiente.valor[0] > Idx[1]
+                    or nodo_temp.siguiente.valor[0] > Idx[1]
                 )
                 self.filas[Idx[0]].insertarDespuesDeNodo([Idx[1], v], nodoAnterior)
 
@@ -172,17 +172,17 @@ class MatrizRala:
     def __mul__(self, k):
         # Esta funcion implementa el producto matriz-escalar -> A * k
 
-        """        if k == 0:
+        """if k == 0:
 
-            claves: List[int] = list(self.filas.keys()).copy()
-            i = 0
-            while len(self.filas) > 0:
-                while len(self.filas[i]) > 0:
-                    self.filas[i].pop()
+        claves: List[int] = list(self.filas.keys()).copy()
+        i = 0
+        while len(self.filas) > 0:
+            while len(self.filas[i]) > 0:
+                self.filas[i].pop()
 
-                self.filas.pop(claves[i])
-                i += 1
-                """
+            self.filas.pop(claves[i])
+            i += 1
+        """
 
         if k == 0:
             return MatrizRala(self.shape[0], self.shape[1])
@@ -261,7 +261,7 @@ class MatrizRala:
 
                 else:
                     res[nro_fila, nodo_self.valor[0]] = (
-                            nodo_self.valor[1] + nodo_other.valor[1]
+                        nodo_self.valor[1] + nodo_other.valor[1]
                     )
                     nodo_self = nodo_self.siguiente
                     nodo_other = nodo_other.siguiente
@@ -296,7 +296,7 @@ class MatrizRala:
         # Esta funcion implementa el producto matricial (notado en Python con el operador "@" ) -> A @ B
         if self.shape[1] != other.shape[0]:
             raise ValueError(
-                "Las matrices no tienen tamaños validos para el producto matricial"
+                "Las matrices no tienen tamaños válidos para el producto matricial"
             )
 
         res: MatrizRala = MatrizRala(self.shape[0], other.shape[1])
