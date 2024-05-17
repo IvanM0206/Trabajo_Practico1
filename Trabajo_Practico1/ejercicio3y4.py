@@ -58,6 +58,8 @@ print("E: ", repr(E))
 
 # Ejercicio 3
 
+print("--------------EJERCICIO 3 - USANDO G-J ----------------")
+
 #SE CONSTRUYE DE LA MATRIZ W
 
 # matriz_W = solicitar_matriz()
@@ -99,7 +101,7 @@ matriz_D = MatrizRala(matriz_W.shape[0], matriz_W.shape[0])
 
 for pos in range(matriz_D.shape[0]):
     valor_pos = 0
-    for fila in range(matriz_W.shape[0]):
+    for fila in range(matriz_D.shape[0]):
         valor_pos += matriz_W[fila, pos]
 
     if valor_pos != 0: # Agregue este if. Antes era directo matriz_D[pos, pos] = valor_pos
@@ -149,12 +151,12 @@ print(f"Gauss-Jordan de 1 - d*W*D con (1-d)/11: {solucion_al_sistema}")
 # ---------------------------------------
 
 suma_probabilidades: float = 0 # Agregue todo esto, igual no cambia el resultado
-norma_vector_solucion: float = norma(solucion_al_sistema)
-prob_y_paper_con_mayor_prob: int = (-1e10, None)
+#norma_vector_solucion: float = norma(solucion_al_sistema)
+#prob_y_paper_con_mayor_prob: int = (-1e10, None)
 for nro_paper, fila in solucion_al_sistema.filas.items():
     prob: float = fila.raiz.valor[1]
-    if prob > prob_y_paper_con_mayor_prob[0]:
-        prob_y_paper_con_mayor_prob = (prob, nro_paper)
+#    if prob > prob_y_paper_con_mayor_prob[0]:
+#        prob_y_paper_con_mayor_prob = (prob, nro_paper)
     suma_probabilidades += prob
 
 suma: float = 0
@@ -163,13 +165,139 @@ for nro_paper, fila in solucion_al_sistema.filas.items():
     suma = suma + prob/suma_probabilidades
     print(f"La probabilidad del paper {nro_paper} es: {prob/suma_probabilidades}")
 
-print(f"suma: {suma}")
-print(f"La suma de probabilidades da: {suma_probabilidades}")
-print(f"El paper con mayor probabilidad es: {prob_y_paper_con_mayor_prob}")
+print(f"La suma de probabilidades da: {suma}")
+#print(f"El paper con mayor probabilidad es: {prob_y_paper_con_mayor_prob}")
+
+# ---------------------------------------
+
+
+print("------------------METODO ITERATIVO----------------")
+
+
+# SE CONSTRUYE LA MATRIZ W
+
+matriz_W2 = MatrizRala(11,11)
+
+matriz_W2[1, 0] = 1
+matriz_W2[6, 0] = 1
+matriz_W2[5, 0] = 1
+matriz_W2[0, 2] = 1
+matriz_W2[0, 3] = 1
+matriz_W2[0, 4] = 1
+matriz_W2[8, 5] = 1
+matriz_W2[5, 6] = 1
+matriz_W2[6, 7] = 1
+matriz_W2[7, 8] = 1
+matriz_W2[6, 8] = 1
+matriz_W2[9, 8] = 1
+matriz_W2[4, 10] = 1
+
+print(f"W: {matriz_W2}")
+
+# ---------------------------------------
+
+# SE CONSTRUYE LA MATRIZ D
+
+matriz_D = MatrizRala(matriz_W.shape[0], matriz_W.shape[0])
+
+for pos in range(matriz_D.shape[1]):
+    valor_pos = 0
+    for fila in range(matriz_W.shape[0]):
+        valor_pos += matriz_W[fila, pos]
+
+    if valor_pos != 0: # Agregue este if. Antes era directo matriz_D[pos, pos] = valor_pos
+        matriz_D[pos, pos] = 1/valor_pos
+    else:
+        matriz_D[pos, pos] = 0
+
+print(f"D: {matriz_D}")
+
+# ---------------------------------------
+
+# SE CONSTRUYE b
+
+b2 = MatrizRala(matriz_W2.shape[0], 1)
+
+for nro_fila in range(b2.shape[0]):
+    b2[nro_fila, 0] = (1 - d) / (b2.shape[0])
+
+print(f"b2: {b2}")
+
+# ---------------------------------------
+
+# SE CONSTRUYE EL VECTOR DE 1's
+
+unos = MatrizRala(11,1)
+for i in range(11):
+    unos[i,0] = 1
+
+# ---------------------------------------
+
+# SE CONSTRUYE p_0
+
+p_t = MatrizRala(11,1)
+for i in range(11):
+    p_t[i,0] = 1/11
+
+# ---------------------------------------
+
+# ELIJO EL EPSILON y d
+
+epsilon1: float = 0.000001
+d = 0.85
+
+# ---------------------------------------
+
+# SE CALCULA LA PRIMERA ITERACION, ES DECIR, SE CONSTRUYE p_1
+
+p_next = unos * ((1-d)/11) + d*matriz_W2@matriz_D@p_t
+
+# ---------------------------------------
+
+# SE EJECUTAN EL RESTO DE ITERACIONES DEL ALGORITMO HASTA QUE CONVERGA
+
+i = 0
+
+while norma((p_next - p_t)) > epsilon1:
+    i += 1
+
+    print(f"Inicia la iteracion {i}")
+    
+    inicio = time.time()
+
+    p_t = p_next
+    p_next = unos * ((1-d)/11) + d*matriz_W@matriz_D@p_t
+    
+    fin = time.time()
+
+    if fin-inicio != 0:
+        print(f"Finalizo la iteracion {i}, tardo: {fin-inicio}s")
+    else:
+        print(f"Finalizo la iteracion {i}")
+
+
+print("termino el metodo iterativo del ejercicio 3")
+
+# ---------------------------------------
+
+suma_probabilidades: float = 0
+for nro_paper, fila in solucion_al_sistema.filas.items():
+    prob: float = fila.raiz.valor[1]
+    suma_probabilidades += prob
+
+suma: float = 0
+for nro_paper, fila in solucion_al_sistema.filas.items():
+    prob: float = fila.raiz.valor[1]
+    suma = suma + prob/suma_probabilidades
+    print(f"La probabilidad del paper {nro_paper} es: {prob/suma_probabilidades}")
+
+print(f"La suma de probabilidades da: {suma}")
 
 # ---------------------------------------
 
 # EJERCICIO 4
+
+print("----------EJERCICIO 4-------------")
 
 N = 629814 # Cantidad total de papers
 citas_recibidas = {}
@@ -250,7 +378,7 @@ vector_prueba[2, 0] = 1
 vector_prueba[3, 0] = 1
 vector_prueba[4, 0] = 1
 
-print(norma(vector_prueba))
+#print(norma(vector_prueba))
 
 # ---------------------------------------
 
@@ -302,15 +430,59 @@ print("Termino el algoritmo")
 
 # ---------------------------------------
 
+# SE HALLA EL TOP 10 DE PAPERS SEGUN LA CANTIDAD DE CITADOS
+
+top_diez_papers_dict: Dict[int, int] = dict() # La clave es el paper y el valor es la cantidad de citas que recibe
+for paper, lista_citas in citas_recibidas.items():
+    if len(top_diez_papers_dict) < 10:
+        top_diez_papers_dict[paper] = len(lista_citas)
+    else:
+        menor_del_top: int = 1e10
+        clave_del_menor: int = None
+        for clave, valor in top_diez_papers_dict.items():
+            if valor < menor_del_top:
+                clave_del_menor = clave
+
+        if len(lista_citas) > menor_del_top:
+            top_diez_papers_dict.pop(clave_del_menor)
+            top_diez_papers_dict[paper] = len(lista_citas)
+
+# ---------------------------------------
+
+# SE HALLA EL TOP 10 DE PAPERS SEGUN EL ALGORITMO
 
 suma_probabilidades: float = 0
-norma_p_next: float = norma(p_next)
-prob_y_paper_con_mayor_prob: int = (-1e10, None)
+papers_con_mayor_impacto: Dict[int, int] = dict()
 for nro_paper, fila in p_next.filas.items():
     prob: float = fila.raiz.valor[1]
-    if prob > prob_y_paper_con_mayor_prob[0]:
-        prob_y_paper_con_mayor_prob = (prob, nro_paper)
-    suma_probabilidades += prob/norma_p_next
+    if len(papers_con_mayor_impacto) < 10:
+        papers_con_mayor_impacto[nro_paper] = prob
+    else:
+        menor_del_top: int = 1e10
+        clave_del_menor: int = None
+        for clave, valor in papers_con_mayor_impacto.items():
+            if valor < menor_del_top:
+                clave_del_menor = clave
 
-print(f"La suma de probabilidades da: {suma_probabilidades}")
-print(f"El paper con mayor probabilidad es: {prob_y_paper_con_mayor_prob}")
+        if prob > menor_del_top:
+            papers_con_mayor_impacto.pop(clave_del_menor)
+            papers_con_mayor_impacto[paper] = prob
+
+# ---------------------------------------
+
+
+print("Busco los nombres de los dos top 10 encontrados...")
+
+res_algoritmo: List[int] = []
+res_citas_recibidas: List[str] = []
+print(papers_con_mayor_impacto, top_diez_papers_dict)
+with open('papers/papers.csv', newline='', encoding="utf-8") as csvfile:
+    quotations = csv.DictReader(csvfile)
+    for row in quotations:
+        if int(row["id"]) in papers_con_mayor_impacto.keys():
+            res_algoritmo.append(row["titulo"])
+        if int(row["id"]) in top_diez_papers_dict.keys():
+            res_citas_recibidas.append(row["titulo"])
+
+print(f" \n Los papers con mayor impacto usando el algoritmo son: {res_algoritmo} \n ")
+print(f" \n Los papers con mayor impacto viendo la cantidad de citas recibidas: {res_citas_recibidas} \n")
