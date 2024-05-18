@@ -172,28 +172,17 @@ class MatrizRala:
     def __mul__(self, k):
         # Esta funcion implementa el producto matriz-escalar -> A * k
 
-        """if k == 0:
-
-        claves: List[int] = list(self.filas.keys()).copy()
-        i = 0
-        while len(self.filas) > 0:
-            while len(self.filas[i]) > 0:
-                self.filas[i].pop()
-
-            self.filas.pop(claves[i])
-            i += 1
-        """
+        res = MatrizRala(self.shape[0], self.shape[1])
 
         if k == 0:
-            return MatrizRala(self.shape[0], self.shape[1])
+            return res
 
         else:
-            matriz_res: MatrizRala = MatrizRala(self.shape[0], self.shape[1])
             for nro_fila, fila in self.filas.items():
                 for nodo in fila:
-                    matriz_res[nro_fila, nodo[0]] = nodo[1] * k
+                    res[nro_fila, nodo[0]] = nodo[1] * k
 
-        return matriz_res
+        return res
 
     def __eq__(self, other):
         if self.shape != other.shape:
@@ -214,27 +203,6 @@ class MatrizRala:
 
         if self.shape != other.shape:
             raise ValueError("Las matrices son de distinto tamaño")
-
-        """for nro_fila, fila in self.filas.items():
-            columnasCompartidas: List[int] = []
-            if nro_fila in other.filas.keys():
-                for nodo in fila:
-                    try:
-                        nodoDeOther = fila.nodoPorCondicion(lambda n: n[0] == nodo[0])
-                        columnasCompartidas.append(nodo[0])
-                    except ValueError:
-                        nodoDeOther = 0
-                    finally:
-                        nodo[1] += nodoDeOther[1]
-                
-                for nodo in other.filas[nro_fila]:
-                    if nodo[0] not in columnasCompartidas:
-                        #INCOMPLETO
-                """
-
-        """for nro_fila in self.filas.keys(): #TERMINAR
-            if nro_fila in other.filas.keys():
-                for nodo in self.filas[nro_fila]:"""
 
         res = MatrizRala(self.shape[0], self.shape[1])
 
@@ -300,13 +268,7 @@ class MatrizRala:
             )
 
         res: MatrizRala = MatrizRala(self.shape[0], other.shape[1])
-        """for i in range(self.shape[0]):
-            for j in range(other.shape[1]):
-                posCalculating = 0
-                for k in range(self.shape[1]):
-                    posCalculating += self[i, k] * other[k, j]
-                res[i, j] = posCalculating"""
-        
+
         """for nro_fila, fila in self.filas.items():
             for columna_other in range(other.shape[1]):
                 nodo_self = fila.raiz
@@ -339,7 +301,7 @@ class MatrizRala:
                         nodoOther = nodoOther.siguiente
 
                 nodoSelf = nodoSelf.siguiente
-                
+
         return res
 
     def __repr__(self):
