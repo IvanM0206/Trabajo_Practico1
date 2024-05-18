@@ -1,8 +1,6 @@
-# IMPORTANTE: Para importar estas clases en otro archivo (que se encuentre en la misma carpeta), escribir:
-# from matricesRalas import MatrizRala, GaussJordan
-from typing import Dict, List
+# Iván Mondrzak y Federico Peitti
 
-# Matrices papers
+from typing import Dict, List
 
 
 class ListaEnlazada:
@@ -72,6 +70,21 @@ class ListaEnlazada:
 
         return nodoActual
 
+    def eliminarNodo(self, nodoAEliminar):
+        # Elimina el nodo objetivo
+        if nodoAEliminar == self.raiz:
+            self.raiz = nodoAEliminar.siguiente
+
+        else:
+            nodoAnterior = self.raiz
+            while nodoAnterior.siguiente != nodoAEliminar:
+                nodoAnterior = nodoAnterior.siguiente
+
+            nodoAnterior.siguiente = nodoAEliminar.siguiente
+
+        self.longitud -= 1
+        return self
+
     def __len__(self):
         return self.longitud
 
@@ -104,17 +117,20 @@ class ListaEnlazada:
 
 class MatrizRala:
     def __init__(self, M, N):
+        # Inicialización de la matriz
         self.filas: Dict[int, ListaEnlazada[ListaEnlazada.Nodo]] = {}
         self.shape = (M, N)
 
     def __getitem__(self, Idx):
         # Esta funcion implementa la indexacion ( Idx es una tupla (m,n) ) -> A[m,n]
 
+        # Si la posición no exise en la matriz
         if Idx[0] >= self.shape[0] or Idx[1] >= self.shape[1]:
             raise IndexError("Esa posicion no existe en la matriz")
 
         res: int = 0
-
+        # Se itera sobre la fila pedida para buscar si existe un elemento en la columnda dada
+        # Caso contrario se devuelve 0
         if Idx[0] in self.filas.keys():
             for nodo in self.filas[Idx[0]]:
                 if nodo[0] == Idx[1]:
@@ -124,38 +140,45 @@ class MatrizRala:
 
     def __setitem__(self, Idx, v):
         # Esta funcion implementa la asignacion durante indexacion ( Idx es una tupla (m,n) ) -> A[m,n] = v
+
+        # Para valores incompatibles
         if Idx[0] >= self.shape[0] or Idx[1] >= self.shape[1]:
             raise IndexError("Esa posicion no existe en la matriz")
 
         complete: bool = False
 
+        # Si se inserta 0, eso equivale a eliminar el nodo o no hacer nada
         if v == 0:
+            # Si ya es 0 no se realiza ninguna modificación
             if self[Idx[0], Idx[1]] == 0:
                 return self
 
             else:
+                # Si la fila objetivo tiene únicamente un elemento distinto de cero, se elimina
                 if len(self.filas[Idx[0]]) == 1:
                     self.filas[Idx[0]].pop()
                     self.filas.pop(Idx[0])
                 else:
-                    nuevaFila: ListaEnlazada = ListaEnlazada()
+                    # Si la fila tiene más de un elemento, se elimina el nodo objetivo
                     nodoAEliminar = self.filas[Idx[0]].nodoPorCondicion(
                         lambda nodo_temp: nodo_temp.valor[0] == Idx[1]
                     )
-                    for nodo in self.filas[Idx[0]]:
-                        if nodo[0] != nodoAEliminar.valor[0]:
-                            nuevaFila.push(nodo)
-
-                    self.filas[Idx[0]] = nuevaFila
+                    self.filas[Idx[0]].eliminarNodo(nodoAEliminar)
 
                 return self
 
+        # Si el elemento a insertar es no nulo
+
+        # Se busca la fila
         if Idx[0] in self.filas.keys():
+            # Se itera sobre la fila para chequear que el nodo exista
             for nodo in self.filas[Idx[0]]:
+                # Si el nodo existe, se modifica su valor
                 if nodo[0] == Idx[1]:
                     nodo[1] = v
                     complete = True
 
+            # Si el nodo no existe, se genera y se conecta con la fila
             if not complete:
                 nodoAnterior = self.filas[Idx[0]].nodoPorCondicion(
                     lambda nodo_temp: nodo_temp.siguiente is None
@@ -163,6 +186,7 @@ class MatrizRala:
                 )
                 self.filas[Idx[0]].insertarDespuesDeNodo([Idx[1], v], nodoAnterior)
 
+        # Si no existe la fila indicada, se crea con un nodo único
         else:
             self.filas[Idx[0]] = ListaEnlazada()
             self.filas[Idx[0]].insertarFrente([Idx[1], v])
@@ -174,9 +198,11 @@ class MatrizRala:
 
         res = MatrizRala(self.shape[0], self.shape[1])
 
+        # Si se multiplica por cero, se devuelve una matrizRala vacía
         if k == 0:
             return res
 
+        # Se copia cada valor de la matriz origen multiplicado por el escalar k
         else:
             for nro_fila, fila in self.filas.items():
                 for nodo in fila:
@@ -185,6 +211,8 @@ class MatrizRala:
         return res
 
     def __eq__(self, other):
+        # Comparación entre matrices
+
         if self.shape != other.shape:
             raise ValueError("Las matrices son de distinto tamaño")
 
@@ -201,32 +229,32 @@ class MatrizRala:
     def __add__(self, other):
         # Esta funcion implementa la suma de matrices -> A + B
 
+        # Si las dimensiones no son compatibles
         if self.shape != other.shape:
             raise ValueError("Las matrices son de distinto tamaño")
 
         res = MatrizRala(self.shape[0], self.shape[1])
 
-        # for i in range(self.shape[0]):
-        #    for j in range(self.shape[1]):
-        #        res[i, j] = self[i, j] + other[i, j]
+        # Filas en común
+        interseccion: List[int] = list(set(self.filas.keys()) & set(other.filas.keys()))
 
-        # OTRA FORMA: MAS EFICIENTE?
-        interseccion_filas: List[int] = list(
-            set(self.filas.keys()) & set(other.filas.keys())
-        )
-        for nro_fila in interseccion_filas:
+        # Se recorre elemento a elemento por fila
+        for nro_fila in interseccion:
             nodo_self = self.filas[nro_fila].raiz
             nodo_other = other.filas[nro_fila].raiz
 
             while nodo_self is not None and nodo_other is not None:
+                # Si sólo hay un elemento en [fila,columna] de la primera, sólo se asigna ese valor
                 if nodo_self.valor[0] < nodo_other.valor[0]:
                     res[nro_fila, nodo_self.valor[0]] = nodo_self.valor[1]
                     nodo_self = nodo_self.siguiente
 
+                # Si sólo hay un elemento en [fila,columna] de la segunda, sólo se asigna ese valor
                 elif nodo_self.valor[0] > nodo_other.valor[0]:
                     res[nro_fila, nodo_other.valor[0]] = nodo_other.valor[1]
                     nodo_other = nodo_other.siguiente
 
+                # Si hay un elmento en las dos matrices en esa posición, se asigna la suma
                 else:
                     res[nro_fila, nodo_self.valor[0]] = (
                         nodo_self.valor[1] + nodo_other.valor[1]
@@ -234,6 +262,8 @@ class MatrizRala:
                     nodo_self = nodo_self.siguiente
                     nodo_other = nodo_other.siguiente
 
+            # Al llegar al final de una fila, la otra no necesariamente se terminó de recorrer
+            # Se completan esas entradas de ser el caso
             if nodo_self is None:
                 while nodo_other is not None:
                     res[nro_fila, nodo_other.valor[0]] = nodo_other.valor[1]
@@ -244,6 +274,8 @@ class MatrizRala:
                     res[nro_fila, nodo_self.valor[0]] = nodo_self.valor[1]
                     nodo_self = nodo_self.siguiente
 
+        # Para las intersecciones nulas (únicamente en una u otra matriz)
+        # se asigna la fila que no sea todos 0s
         solo_en_self = list(set(self.filas.keys()) - set(other.filas.keys()))
         for nro_fila in solo_en_self:
             for nodo in self.filas[nro_fila]:
@@ -269,30 +301,16 @@ class MatrizRala:
 
         res: MatrizRala = MatrizRala(self.shape[0], other.shape[1])
 
-        """for nro_fila, fila in self.filas.items():
-            for columna_other in range(other.shape[1]):
-                nodo_self = fila.raiz
-                valor = 0
-                while nodo_self is not None:
-                    valor += nodo_self.valor[1]*other[nodo_self.valor[0], columna_other]
-                    try:
-                        nodo_columna = other.filas[nodo_self.valor[0]].nodoPorCondicion(lambda nodo: nodo.valor[0] == columna_other)
-                        valor += nodo_columna.valor[1]*nodo_self.valor[1]
-                    
-                    except:
-                        valor += 0
-
-                    finally:
-                        nodo_self = nodo_self.siguiente
-                    nodo_self = nodo_self.siguiente
-
-                res[nro_fila, columna_other] = valor"""
-
+        # Se itera sobre las filas de A
         for filaOrigen in self.filas.keys():
             nodoSelf = self.filas[filaOrigen].raiz
 
+            # Para cada A[i,j] no nulo
             while nodoSelf is not None:
+                # Se itera sobre la fila j de B
                 if nodoSelf.valor[0] in other.filas.keys():
+                    # Sea k el índice de columna iterado de B
+                    # Se añade a res[i, k] la multiplicación de A[i,j]*B[j,k]
                     nodoOther = other.filas[nodoSelf.valor[0]].raiz
                     while nodoOther is not None:
                         res[filaOrigen, nodoOther.valor[0]] += (
@@ -302,6 +320,7 @@ class MatrizRala:
 
                 nodoSelf = nodoSelf.siguiente
 
+        # Esto garantiza que al final de las iteraciones cada res[i,k] tiene la sumatoria de A[i,j]*B[j,k] con 0 <= j < #columnas de A ó #filas de B
         return res
 
     def __repr__(self):
