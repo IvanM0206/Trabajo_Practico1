@@ -67,11 +67,11 @@ def GaussJordan(A, b):
     filas_restantes = filas - set(matriz_temp_gj.filas.keys())
     print(filas, filas_restantes)
 
-    #Agregar caso cuando hay mas columnas que filas
     for nro_fila in filas_restantes:
         if b[nro_fila, 0] != 0:
             raise ArithmeticError("El sistema no tiene solucion")
-
+    
+    if len(matriz_temp_gj.filas.keys()) != A.shape[1]:
         raise ArithmeticError("El sistema tiene infinitas soluciones")
 
     for nro_fila, fila in matriz_temp_gj.filas.items():
