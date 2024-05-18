@@ -21,8 +21,8 @@ B[2, 0] = 1
 print(repr(A))
 print(repr(B))
 #print("A+B: ", repr(A_mas_B))
-A * 4
-print(repr(A))
+multuplicacion_A = A * 4
+print(multuplicacion_A)
 #A[0, 0] = 0
 #print("cero", repr(A))
 #print(repr(B))

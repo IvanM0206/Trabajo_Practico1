@@ -188,12 +188,12 @@ class MatrizRala:
             return MatrizRala(self.shape[0], self.shape[1])
 
         else:
-
-            for fila in self.filas.values():
+            matriz_res: MatrizRala = MatrizRala(self.shape[0], self.shape[1])
+            for nro_fila, fila in self.filas.items():
                 for nodo in fila:
-                    nodo[1] *= k
+                    matriz_res[nro_fila, nodo[0]] = nodo[1] * k
 
-        return self
+        return matriz_res
 
     def __eq__(self, other):
         if self.shape != other.shape:

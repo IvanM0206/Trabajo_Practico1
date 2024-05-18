@@ -13,7 +13,7 @@ N = 0 # Cantidad total de papers
 citas_recibidas = {}
 citados = []
 d = 0.85
-epsilon = 0.05
+epsilon = 0.0001
 # citas es un dict que para todo paper me dice quienes lo citaron (lista de ids)
 # y me dice a cuantos cita en la posición 0
 
@@ -78,7 +78,7 @@ for i in range(N):
 
 unos = MatrizRala(N,1)
 for i in range(N):
-    unos[i,0]=1
+    unos[i,0] = 1
 
 # ---------------------------------------
 
@@ -136,7 +136,7 @@ while norma((p_next - p_t)) > epsilon:
 
     p_t = p_next
 
-    p_next = unos * ((1-d)/N) + d*W@D@p_t
+    p_next = unos * ((1-d)/N) + (d*W@D@p_t)
     
     fin = time.time()
 

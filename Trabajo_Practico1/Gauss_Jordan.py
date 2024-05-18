@@ -13,7 +13,7 @@ def GaussJordan(A, b):
     pos_columna_pivote = None
 
     for pos_fila_pivotes in range(cantPivotes):
-        print(matriz_temp_gj)
+        #print(matriz_temp_gj)
         if pos_fila_pivotes not in matriz_temp_gj.filas.keys():
             if b[pos_fila_pivotes, 0] != 0:
                 raise ArithmeticError("El sistema no tiene solucion")
@@ -29,18 +29,18 @@ def GaussJordan(A, b):
 
                 nodo = nodo.siguiente
 
-            print("pivote", pivote)
+            #print("pivote", pivote)
 
             if pivote != 1:
                 nodo = matriz_temp_gj.filas[pos_fila_pivotes].raiz
                 while nodo is not None:
-                    print("pos", nodo.valor)
+                    #print("pos", nodo.valor)
                     matriz_temp_gj[pos_fila_pivotes, nodo.valor[0]] /= pivote
                     nodo = nodo.siguiente
 
                 b[pos_fila_pivotes, 0] /= pivote
 
-            print("primera", repr(matriz_temp_gj))
+            #print("primera", repr(matriz_temp_gj))
             filas_a_restar = list(matriz_temp_gj.filas.keys()).copy()
             filas_a_restar.remove(pos_fila_pivotes)
             for fila in filas_a_restar:
@@ -61,11 +61,11 @@ def GaussJordan(A, b):
 
     res = MatrizRala(A.shape[1], 1)
 
-    print(repr(matriz_temp_gj), repr(b))
+    #print(repr(matriz_temp_gj), repr(b))
 
     filas = set([x for x in range(A.shape[0])])
     filas_restantes = filas - set(matriz_temp_gj.filas.keys())
-    print(filas, filas_restantes)
+    #print(filas, filas_restantes)
 
     for nro_fila in filas_restantes:
         if b[nro_fila, 0] != 0:
