@@ -63,7 +63,7 @@ def GaussJordan(A, b):
 
     filas = set([x for x in range(A.shape[0])])
     filas_restantes = filas - set(matriz_temp_gj.filas.keys())
-    # print(filas, filas_restantes)
+    #print(filas, filas_restantes)
 
     for nro_fila in filas_restantes:
         if b[nro_fila, 0] != 0:

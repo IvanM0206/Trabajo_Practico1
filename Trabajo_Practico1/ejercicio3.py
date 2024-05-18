@@ -199,7 +199,7 @@ for i in range(11):
 
 # ELIJO EL EPSILON Y d
 
-epsilon1: float = 0.01
+epsilon: float = 0.01
 d = 0.85
 
 # ---------------------------------------
@@ -214,7 +214,7 @@ p_next = unos * ((1-d)/11) + d*matriz_W2@matriz_D@p_t
 
 i = 0
 
-while norma((p_next - p_t)) > epsilon1:
+while norma((p_next - p_t)) > 0:
     i += 1
 
     print(f"Inicia la iteracion {i}")

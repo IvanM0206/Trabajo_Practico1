@@ -1,4 +1,5 @@
 from matricesRalas import MatrizRala
+from Gauss_Jordan import GaussJordan
 
 # TESTS METODOS MATRIZ RALA
 
@@ -50,3 +51,22 @@ print("E: ", repr(E))
 
 # TESTS GAUSS-JORDAN
 
+A = MatrizRala(3, 2)
+A[0, 0] = 1
+A[0, 1] = 2
+A[1, 0] = 2
+A[1, 1] = 4
+A[2, 0] = 3
+A[2, 1] = 6
+
+print(A)
+
+
+b = MatrizRala(3, 1)
+b[0, 0] = 3
+b[1, 0] = 6
+b[2, 0] = 9
+
+print(b)
+
+GaussJordan(A, b)

@@ -13,7 +13,7 @@ N = 0 # Cantidad total de papers
 citas_recibidas = {}
 citados = []
 d = 0.85
-epsilon = 0.0001
+epsilon = 0.001
 # citas es un dict que para todo paper me dice quienes lo citaron (lista de ids)
 # y me dice a cuantos cita en la posición 0
 
@@ -83,7 +83,7 @@ for i in range(N):
 # ---------------------------------------
 
 
-print("empieza la accion")
+print("Empieza la accion")
 
 vector_prueba = MatrizRala(5, 1)
 
