@@ -13,7 +13,7 @@ N = 0 # Cantidad total de papers
 citas_recibidas = {}
 citados = []
 d = 0.85
-epsilon = 0.001
+epsilon = 0.000001
 # citas es un dict que para todo paper me dice quienes lo citaron (lista de ids)
 # y me dice a cuantos cita en la posición 0
 
@@ -148,60 +148,70 @@ print("Termino el algoritmo")
 
 # SE HALLA EL TOP 10 DE PAPERS SEGUN LA CANTIDAD DE CITADOS
 
-top_diez_papers_dict: Dict[int, int] = dict() # La clave es el paper y el valor es la cantidad de citas que recibe
-for paper, lista_citas in citas_recibidas.items():
-    if len(top_diez_papers_dict) < 10:
-        top_diez_papers_dict[paper] = len(lista_citas)
-    else:
-        menor_del_top: int = 1e10
-        clave_del_menor: int = None
-        for clave, valor in top_diez_papers_dict.items():
-            if valor < menor_del_top:
-                clave_del_menor = clave
-                menor_del_top = valor
 
-        if len(lista_citas) > menor_del_top:
-            top_diez_papers_dict.pop(clave_del_menor)
-            top_diez_papers_dict[paper] = len(lista_citas)
+diezPopulares: Dict[int, int] = dict() # La clave es el paper y el valor es la cantidad de citas que recibe
+for paper, lista_citas in citas_recibidas.items():
+    if len(diezPopulares) < 10:
+        diezPopulares[paper] = len(lista_citas)
+    else:
+        citasMenosPopular: int = 1e10
+        paperMenosPopular: int = None
+        for clave, valor in diezPopulares.items():
+            if valor < citasMenosPopular:
+                paperMenosPopular = clave
+                citasMenosPopular = valor
+
+        if len(lista_citas) > citasMenosPopular:
+            diezPopulares.pop(paperMenosPopular)
+            diezPopulares[paper] = len(lista_citas)
 
 
 # ---------------------------------------
 
 # SE HALLA EL TOP 10 DE PAPERS SEGUN EL ALGORITMO
 
-suma_probabilidades: float = 0
-papers_con_mayor_impacto: Dict[int, int] = dict()
+diezImpacto: Dict[int, float] = dict()
 for nro_paper, fila in p_next.filas.items():
-    prob: float = fila.raiz.valor[1]
-    if len(papers_con_mayor_impacto) < 10:
-        papers_con_mayor_impacto[nro_paper] = prob
+    valorFinal: float = fila.raiz.valor[1]
+    if len(diezImpacto) < 10:
+        diezImpacto[nro_paper] = valorFinal
     else:
-        menor_del_top: int = 1e10
-        clave_del_menor: int = None
-        for clave, valor in papers_con_mayor_impacto.items():
-            if valor < menor_del_top:
-                clave_del_menor = clave
-                menor_del_top = valor
+        menosImpacto: int = 1e10
+        paperMenosImpacto: int = None
+        for clave, valor in diezImpacto.items():
+            if valor < menosImpacto:
+                paperMenosImpacto = clave
+                menosImpacto = valor
 
-        if prob > menor_del_top:
-            papers_con_mayor_impacto.pop(clave_del_menor)
-            papers_con_mayor_impacto[paper] = prob
+        if valorFinal > menosImpacto:
+            diezImpacto.pop(paperMenosImpacto)
+            diezImpacto[nro_paper] = valorFinal
 
 # ---------------------------------------
 
 
+
 print("Busco los nombres de los dos top 10 encontrados...")
 
-res_algoritmo: List[Tuple[str, int]] = []
-res_citas_recibidas: List[Tuple[str, int, int]] = []
-print(papers_con_mayor_impacto, top_diez_papers_dict)
+nombresAlgoritmo: List[Tuple[str, int, float]] = []
+nombresCitasRecibidas: List[Tuple[str, int, int]] = []
 with open('papers/papers.csv', newline='', encoding="utf-8") as csvfile:
     quotations = csv.DictReader(csvfile)
     for row in quotations:
-        if int(row["id"]) in papers_con_mayor_impacto.keys():
-            res_algoritmo.append((row["titulo"], int(row["id"])))
-        if int(row["id"]) in top_diez_papers_dict.keys():
-            res_citas_recibidas.append((row["titulo"], int(row["id"]), top_diez_papers_dict[int(row["id"])]))
+        if int(row["id"]) in diezPopulares.keys():
+            nombresCitasRecibidas.append((row["titulo"], int(row["id"]), diezPopulares[int(row["id"])]))
+        if int(row["id"]) in diezImpacto.keys():
+            nombresAlgoritmo.append((row["titulo"], int(row["id"]), diezImpacto[int(row["id"])]))
 
-print(f" \n Los papers con mayor impacto usando el algoritmo son: {res_algoritmo} \n ")
-print(f" \n Los papers con mayor impacto viendo la cantidad de citas recibidas: {res_citas_recibidas} \n")
+nombresAlgoritmo.sort(key=lambda x : x[2], reverse=True)
+
+print("Papers con mayor impacto")
+for nombre in nombresAlgoritmo: 
+    print(f"Paper: {nombre[0]}, id: {nombre[1]}, proba:{nombre[2]}")
+
+nombresCitasRecibidas.sort(key=lambda x : x[2], reverse=True)
+
+print("\n")
+print("Papers con más citas")
+for nombre in nombresCitasRecibidas: 
+    print(f"Paper: {nombre[0]}, id: {nombre[1]}, citas recibidas:{nombre[2]}")
