@@ -1,3 +1,5 @@
+# Iván Mondrzak y Federico Peitti
+
 from matricesRalas import MatrizRala
 import math
 
